@@ -9,6 +9,7 @@
 #include <ctime> // time.sleep ==
 #include <set>
 #include <bits/stdc++.h> // lambda
+#include <sqlite3.h>
 
 
 
@@ -25,9 +26,18 @@ string loginTokens[] = {
 };
 
 void login_suggestion(std::ifstream& file) {
+    string attemptedLoginKey = "";
+
+    cout << "Please enter the 12 character key for your account" << endl;
+    cin >> attemptedLoginKey;
+
+
     string tp;
     while(getline(file, tp)) {
-        cout << tp << endl;
+        if (attemptedLoginKey == tp) {
+            cout << "Attempted: " << attemptedLoginKey << endl <<
+            "Actual: " << tp;
+        }
     }
 }
 
@@ -62,9 +72,22 @@ void registration_acc() {
     }
 }
 
+
+
 int main() {
     string accountLogic = "";
     bool acceptedInput = false;
+
+    cout << "Please wait... Connecting to database.....";
+    sqlite3* db;
+    int rc = sqlite3_open("users.db", &db);
+
+    if (rc) {
+        std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+        sqlite3_close(db); 
+        return rc;
+    }
+
 
     cout << "Welcome to realism banking - Entirely made in C++!" << endl;
     cout << "Do you already have an account? [Y/N]: ";
@@ -73,6 +96,9 @@ int main() {
 
     if (accountLogic == "Y" || accountLogic == "y") {
         acceptedInput = true;
+        std::ifstream infile("logintokens.txt");
+        login_suggestion(infile);
+        infile.close(); // close after reading
     } else if (accountLogic == "N" || accountLogic == "n") {
         acceptedInput = true;
         registration_acc();
